@@ -34,7 +34,7 @@
             background-color: white;
             z-index: 100;
             width: 100%;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
@@ -43,9 +43,9 @@
             cursor: pointer;
         }
 
-        /* Smaller Image Previews */
+        /* Larger Image Previews */
         .custom-option img {
-            width: 50px;
+            width: 150px;
             height: auto;
             border-radius: 5px;
         }
@@ -54,9 +54,9 @@
             background-color: #f0f0f0;
         }
 
-        /* Smaller Selected Work Preview */
+        /* Larger Selected Work Preview */
         #workSelectButton img {
-            width: 100px;
+            width: 150px;
             height: auto;
         }
     </style>
@@ -117,7 +117,7 @@
                 });
             });
 
-        // Fetch works and populate the dropdown with smaller image previews
+        // Fetch works and populate the dropdown with larger image previews
         artistSelect.addEventListener('change', () => {
             workDropdown.innerHTML = ''; 
             workSelectButton.innerHTML = `<img src="/placeholder.svg" alt="Select a work">`; 
