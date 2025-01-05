@@ -10,6 +10,51 @@
         .window { width: 48%; border: 1px solid #ccc; padding: 10px; }
         img { max-width: 100%; height: auto; }
         select, button { margin-top: 10px; }
+
+        /* Custom dropdown styling */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+        
+        .custom-dropdown-button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+            background-color: white;
+        }
+        
+        .custom-dropdown-content {
+            display: none;
+            position: absolute;
+            border: 1px solid #ccc;
+            background-color: white;
+            z-index: 100;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .custom-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .custom-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        .custom-option img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -20,17 +65,24 @@
             <input type="file" id="imageUpload" accept="image/*">
             <img id="uploadedImage" src="/placeholder.svg" alt="Uploaded Image">
         </div>
+        
         <div class="window">
             <h2>Selected Style</h2>
+            <!-- Artist Select -->
             <select id="artistSelect">
                 <option value="">Select an artist</option>
             </select>
-            <select id="workSelect">
-                <option value="">Select a work</option>
-            </select>
+
+            <!-- Custom Work Dropdown -->
+            <div class="custom-dropdown" id="workSelectContainer">
+                <div class="custom-dropdown-button" id="workSelectButton">Select a work</div>
+                <div class="custom-dropdown-content" id="workDropdown"></div>
+            </div>
+
             <img id="selectedWork" src="/placeholder.svg" alt="Selected Work">
         </div>
     </div>
+    
     <button id="generateBtn">Generate</button>
     <div class="window">
         <h2>Generated Image</h2>
@@ -39,10 +91,11 @@
 
     <script>
         const artistSelect = document.getElementById('artistSelect');
-        const workSelect = document.getElementById('workSelect');
-        const imageUpload = document.getElementById('imageUpload');
-        const uploadedImage = document.getElementById('uploadedImage');
+        const workDropdown = document.getElementById('workDropdown');
+        const workSelectButton = document.getElementById('workSelectButton');
         const selectedWork = document.getElementById('selectedWork');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const imageUpload = document.getElementById('imageUpload');
         const generateBtn = document.getElementById('generateBtn');
         const generatedImage = document.getElementById('generatedImage');
 
@@ -58,26 +111,44 @@
                 });
             });
 
-        // Fetch works based on selected artist and populate the works dropdown
+        // Fetch works and populate the custom dropdown with image previews
         artistSelect.addEventListener('change', () => {
-            workSelect.innerHTML = '<option value="">Select a work</option>';
+            workDropdown.innerHTML = ''; 
+            workSelectButton.textContent = "Select a work"; 
+            selectedWork.src = "/placeholder.svg"; 
+
             if (artistSelect.value) {
                 fetch(`/Artist-work/${artistSelect.value}`)
                     .then(response => response.json())
                     .then(data => {
                         data.works.forEach(work => {
-                            const option = document.createElement('option');
-                            option.value = work;
-                            option.textContent = work;
-                            workSelect.appendChild(option);
+                            const optionDiv = document.createElement('div');
+                            optionDiv.classList.add('custom-option');
+                            optionDiv.innerHTML = `
+                                <img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">
+                                <span>${work}</span>
+                            `;
+                            optionDiv.onclick = () => {
+                                workSelectButton.textContent = work;
+                                selectedWork.src = `Dataset/Artist-work/${artistSelect.value}/${work}`;
+                                workDropdown.style.display = 'none';
+                            };
+                            workDropdown.appendChild(optionDiv);
                         });
                     });
             }
         });
 
-        // Display selected work
-        workSelect.addEventListener('change', () => {
-            selectedWork.src = `Dataset/Artist-work/${artistSelect.value}/${workSelect.value}`;
+        // Show/hide dropdown functionality
+        workSelectButton.addEventListener('click', () => {
+            workDropdown.style.display = workDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', (event) => {
+            if (!event.target.closest('.custom-dropdown')) {
+                workDropdown.style.display = 'none';
+            }
         });
 
         // Upload image and show preview
@@ -92,16 +163,24 @@
             }
         });
 
-        // Generate image
+        // Generate the image with style transfer
         generateBtn.addEventListener('click', async () => {
-            if (!imageUpload.files[0] || !artistSelect.value || !workSelect.value) {
-                alert('Please upload an image and select an artist and work.');
+            if (!imageUpload.files[0]) {
+                alert('Please upload an image.');
+                return;
+            }
+            if (!artistSelect.value) {
+                alert('Please select an artist.');
+                return;
+            }
+            if (!selectedWork.src || selectedWork.src.includes('placeholder')) {
+                alert('Please select a work.');
                 return;
             }
 
             const formData = new FormData();
             formData.append('artist', artistSelect.value);
-            formData.append('work', workSelect.value);
+            formData.append('work', selectedWork.src.split('/').pop());
             formData.append('uploaded_image', uploadedImage.src.split('/').pop());
 
             const response = await fetch('/generate', { method: 'POST', body: formData });
