@@ -5,79 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Style Transfer Project</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-        .container { display: flex; justify-content: space-between; }
-        .window { width: 48%; border: 1px solid #ccc; padding: 10px; }
-        img { max-width: 100%; height: auto; }
-        select, button { margin-top: 10px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
 
-        /* Custom dropdown styling */
+        h1, h2 {
+            text-align: center;
+            color: #444;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .window {
+            flex: 1 1 300px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #5c67f2;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #4a54e1;
+        }
+
+        /* Custom Dropdown Styling */
         .custom-dropdown {
             position: relative;
             width: 100%;
         }
-        
+
         .custom-dropdown-button {
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            width: 100%;
+            background: #fff;
             cursor: pointer;
             text-align: center;
-            background-color: white;
         }
-        
+
         .custom-dropdown-content {
             display: none;
             position: absolute;
-            border: 1px solid #ccc;
-            background-color: white;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 10px;
             z-index: 100;
             width: 100%;
             max-height: 300px;
             overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .custom-option {
-            padding: 5px;
+            padding: 10px;
             cursor: pointer;
+            text-align: center;
         }
 
-        /* Larger Image Previews */
         .custom-option img {
-            width: 150px;
-            height: auto;
-            border-radius: 5px;
+            max-width: 120px;
+            border-radius: 10px;
         }
 
         .custom-option:hover {
-            background-color: #f0f0f0;
+            background: #eee;
         }
 
-        /* Larger Selected Work Preview */
+        /* Better Image Previews */
         #workSelectButton img {
-            width: 150px;
-            height: auto;
+            width: 120px;
+        }
+
+        #selectedWork {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Style Transfer Project</h1>
+    
     <div class="container">
+        <!-- Image Upload Section -->
         <div class="window">
             <h2>Upload Image</h2>
             <input type="file" id="imageUpload" accept="image/*">
             <img id="uploadedImage" src="/placeholder.svg" alt="Uploaded Image">
         </div>
         
+        <!-- Style Selection Section -->
         <div class="window">
             <h2>Selected Style</h2>
-            <!-- Artist Select -->
+            <!-- Artist Selection -->
             <select id="artistSelect">
-                <option value="">Select an artist</option>
+                <option value="">Select an Artist</option>
             </select>
 
-            <!-- Custom Work Dropdown -->
+            <!-- Work Selection with Custom Dropdown -->
             <div class="custom-dropdown" id="workSelectContainer">
                 <div class="custom-dropdown-button" id="workSelectButton">
                     <img src="/placeholder.svg" alt="Select a work">
@@ -85,12 +144,18 @@
                 <div class="custom-dropdown-content" id="workDropdown"></div>
             </div>
 
+            <!-- Selected Work Preview -->
             <img id="selectedWork" src="/placeholder.svg" alt="Selected Work">
         </div>
     </div>
     
-    <button id="generateBtn">Generate</button>
-    <div class="window">
+    <!-- Generate Button Section -->
+    <div style="text-align: center; margin-top: 20px;">
+        <button id="generateBtn">Generate Stylized Image</button>
+    </div>
+    
+    <!-- Generated Image Section -->
+    <div class="window" style="margin-top: 20px;">
         <h2>Generated Image</h2>
         <img id="generatedImage" src="/placeholder.svg" alt="Generated Image">
     </div>
@@ -117,11 +182,11 @@
                 });
             });
 
-        // Fetch works and populate the dropdown with larger image previews
+        // Fetch works and populate the dropdown with previews
         artistSelect.addEventListener('change', () => {
-            workDropdown.innerHTML = ''; 
-            workSelectButton.innerHTML = `<img src="/placeholder.svg" alt="Select a work">`; 
-            selectedWork.src = "/placeholder.svg"; 
+            workDropdown.innerHTML = '';
+            workSelectButton.innerHTML = `<img src="/placeholder.svg" alt="Select a work">`;
+            selectedWork.src = "/placeholder.svg";
 
             if (artistSelect.value) {
                 fetch(`/Artist-work/${artistSelect.value}`)
@@ -130,9 +195,7 @@
                         data.works.forEach(work => {
                             const optionDiv = document.createElement('div');
                             optionDiv.classList.add('custom-option');
-                            optionDiv.innerHTML = `
-                                <img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">
-                            `;
+                            optionDiv.innerHTML = `<img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">`;
                             optionDiv.onclick = () => {
                                 workSelectButton.innerHTML = `<img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">`;
                                 selectedWork.src = `Dataset/Artist-work/${artistSelect.value}/${work}`;
@@ -144,19 +207,19 @@
             }
         });
 
-        // Show/hide dropdown functionality
+        // Toggle dropdown visibility
         workSelectButton.addEventListener('click', () => {
             workDropdown.style.display = workDropdown.style.display === 'block' ? 'none' : 'block';
         });
 
-        // Close dropdown when clicking outside
+        // Close dropdown on outside click
         window.addEventListener('click', (event) => {
             if (!event.target.closest('.custom-dropdown')) {
                 workDropdown.style.display = 'none';
             }
         });
 
-        // Upload image and show preview
+        // Upload Image Preview
         imageUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -168,21 +231,8 @@
             }
         });
 
-        // Generate the image with style transfer
+        // Generate Image
         generateBtn.addEventListener('click', async () => {
-            if (!imageUpload.files[0]) {
-                alert('Please upload an image.');
-                return;
-            }
-            if (!artistSelect.value) {
-                alert('Please select an artist.');
-                return;
-            }
-            if (!selectedWork.src || selectedWork.src.includes('placeholder')) {
-                alert('Please select a work.');
-                return;
-            }
-
             const formData = new FormData();
             formData.append('artist', artistSelect.value);
             formData.append('work', selectedWork.src.split('/').pop());
