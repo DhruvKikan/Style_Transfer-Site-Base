@@ -23,7 +23,7 @@
             border-radius: 5px;
             width: 100%;
             cursor: pointer;
-            text-align: left;
+            text-align: center;
             background-color: white;
         }
         
@@ -39,21 +39,24 @@
         }
 
         .custom-option {
-            display: flex;
-            align-items: center;
-            padding: 10px;
+            padding: 5px;
             cursor: pointer;
+        }
+
+        .custom-option img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
         }
 
         .custom-option:hover {
             background-color: #f0f0f0;
         }
 
-        .custom-option img {
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
-            border-radius: 5px;
+        /* Selected work preview */
+        #workSelectButton img {
+            width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -75,7 +78,9 @@
 
             <!-- Custom Work Dropdown -->
             <div class="custom-dropdown" id="workSelectContainer">
-                <div class="custom-dropdown-button" id="workSelectButton">Select a work</div>
+                <div class="custom-dropdown-button" id="workSelectButton">
+                    <img src="/placeholder.svg" alt="Select a work">
+                </div>
                 <div class="custom-dropdown-content" id="workDropdown"></div>
             </div>
 
@@ -111,10 +116,10 @@
                 });
             });
 
-        // Fetch works and populate the custom dropdown with image previews
+        // Fetch works and populate the custom dropdown with image-only previews
         artistSelect.addEventListener('change', () => {
             workDropdown.innerHTML = ''; 
-            workSelectButton.textContent = "Select a work"; 
+            workSelectButton.innerHTML = `<img src="/placeholder.svg" alt="Select a work">`; 
             selectedWork.src = "/placeholder.svg"; 
 
             if (artistSelect.value) {
@@ -126,10 +131,9 @@
                             optionDiv.classList.add('custom-option');
                             optionDiv.innerHTML = `
                                 <img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">
-                                <span>${work}</span>
                             `;
                             optionDiv.onclick = () => {
-                                workSelectButton.textContent = work;
+                                workSelectButton.innerHTML = `<img src="Dataset/Artist-work/${artistSelect.value}/${work}" alt="${work}">`;
                                 selectedWork.src = `Dataset/Artist-work/${artistSelect.value}/${work}`;
                                 workDropdown.style.display = 'none';
                             };
