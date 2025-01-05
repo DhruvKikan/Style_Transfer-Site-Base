@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Transfer Project</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        .container { display: flex; justify-content: space-between; }
+        .window { width: 48%; border: 1px solid #ccc; padding: 10px; }
+        img { max-width: 100%; height: auto; }
+        select, button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Style Transfer Project</h1>
+    <div class="container">
+        <div class="window">
+            <h2>Upload Image</h2>
+            <input type="file" id="imageUpload" accept="image/*">
+            <img id="uploadedImage" src="/placeholder.svg" alt="Uploaded Image">
+        </div>
+        <div class="window">
+            <h2>Selected Style</h2>
+            <select id="artistSelect">
+                <option value="">Select an artist</option>
+            </select>
+            <select id="workSelect">
+                <option value="">Select a work</option>
+            </select>
+            <img id="selectedWork" src="/placeholder.svg" alt="Selected Work">
+        </div>
+    </div>
+    <button id="generateBtn">Generate</button>
+    <div class="window">
+        <h2>Generated Image</h2>
+        <img id="generatedImage" src="/placeholder.svg" alt="Generated Image">
+    </div>
+
+    <script>
+        const artistSelect = document.getElementById('artistSelect');
+        const workSelect = document.getElementById('workSelect');
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const selectedWork = document.getElementById('selectedWork');
+        const generateBtn = document.getElementById('generateBtn');
+        const generatedImage = document.getElementById('generatedImage');
+
+        // Fetch artists and populate the artist dropdown
+        fetch('/artists')
+            .then(response => response.json())
+            .then(data => {
+                data.artists.forEach(artist => {
+                    const option = document.createElement('option');
+                    option.value = artist;
+                    option.textContent = artist;
+                    artistSelect.appendChild(option);
+                });
+            });
+
+        // Fetch works based on selected artist and populate the works dropdown
+        artistSelect.addEventListener('change', () => {
+            workSelect.innerHTML = '<option value="">Select a work</option>';
+            if (artistSelect.value) {
+                fetch(`/Artist-work/${artistSelect.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.works.forEach(work => {
+                            const option = document.createElement('option');
+                            option.value = work;
+                            option.textContent = work;
+                            workSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+
+        // Display selected work
+        workSelect.addEventListener('change', () => {
+            selectedWork.src = `Dataset/Artist-work/${artistSelect.value}/${workSelect.value}`;
+        });
+
+        // Upload image and show preview
+        imageUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await response.json();
+                uploadedImage.src = `/static/${data.filename}`;
+            }
+        });
+
+        // Generate image
+        generateBtn.addEventListener('click', async () => {
+            if (!imageUpload.files[0] || !artistSelect.value || !workSelect.value) {
+                alert('Please upload an image and select an artist and work.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('artist', artistSelect.value);
+            formData.append('work', workSelect.value);
+            formData.append('uploaded_image', uploadedImage.src.split('/').pop());
+
+            const response = await fetch('/generate', { method: 'POST', body: formData });
+            const blob = await response.blob();
+            generatedImage.src = URL.createObjectURL(blob);
+        });
+    </script>
+</body>
+</html>
