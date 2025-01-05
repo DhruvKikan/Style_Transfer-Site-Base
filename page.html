@@ -219,29 +219,52 @@
             }
         });
 
-        // Upload Image Preview
+        // Upload image and show preview instantly
         imageUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                const response = await fetch('/upload', { method: 'POST', body: formData });
-                const data = await response.json();
-                uploadedImage.src = `/static/${data.filename}`;
+                const reader = new FileReader(); 
+                reader.onload = (e) => {
+                    uploadedImage.src = e.target.result; // Display the image directly
+                };
+                reader.readAsDataURL(file); // Convert image to a data URL for preview
             }
         });
 
-        // Generate Image
+        // Generate the image with style transfer and error handling
         generateBtn.addEventListener('click', async () => {
-            const formData = new FormData();
-            formData.append('artist', artistSelect.value);
-            formData.append('work', selectedWork.src.split('/').pop());
-            formData.append('uploaded_image', uploadedImage.src.split('/').pop());
+            try {
+                // Validate inputs
+                if (!imageUpload.files[0]) throw new Error('Please upload an image.');
+                if (!artistSelect.value) throw new Error('Please select an artist.');
+                if (!selectedWork.src || selectedWork.src.includes('placeholder')) throw new Error('Please select a work.');
 
-            const response = await fetch('/generate', { method: 'POST', body: formData });
-            const blob = await response.blob();
-            generatedImage.src = URL.createObjectURL(blob);
+                // Prepare data for submission
+                const formData = new FormData();
+                formData.append('artist', artistSelect.value);
+                formData.append('work', selectedWork.src.split('/').pop());
+                formData.append('uploaded_image', uploadedImage.src.split('/').pop());
+
+                // Send the request
+                const response = await fetch('/generate', { method: 'POST', body: formData });
+
+                // Error handling for HTTP responses
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+                }
+
+                // Display the generated image
+                const blob = await response.blob();
+                generatedImage.src = URL.createObjectURL(blob);
+                alert('Image generated successfully!');
+
+            } catch (error) {
+                // Display error message
+                alert(`Error: ${error.message}`);
+                console.error('Error details:', error);
+            }
         });
+
     </script>
 </body>
 </html>
